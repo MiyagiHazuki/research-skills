@@ -1,60 +1,225 @@
-# Sisyphus Skills
+# 研究向 Agent Skills
 
-[OpenCode](https://github.com/OhMyOpenCode/opencode) 自定义 Agent 技能集。每个技能为特定任务提供专业指令和工作流程。
+给人看的技能说明书，不是给模型的操作合约。每个子目录里的 `SKILL.md` 才是 agent 真正执行的规则。
 
-通过 `skill(name="技能名")` 加载技能，或在 task 调用中使用 `load_skills=[...]`。
+这是一套面向**论文、实验、研究代码**的 Agent Skills：拆论文、审稿、写稿、立项、复现、诊断、整理仓库、烤问计划、压缩对话。不是通用产品工程工具箱，也不代替你读文献、跑实验、对数字负责。
 
----
-
-## 技能索引
-
-| # | 技能 | 领域 | 描述 | 触发词 (EN) | 触发词 (ZH) |
-|---|---|---|---|---|---|
-| 1 | `archive` | 代码库整理 | 将凌乱的研究项目转化为整洁、文档齐全、可复现的开源仓库。五阶段流程：侦察 → 文档化 → 清理 → 重构 → 验证。 | "archive this repo", "prepare for release", "standardize project structure", "paper repo", `/archive` | "整理项目", "整理成论文仓库", "论文开源" |
-| 2 | `caveman` | 通信压缩 | 超压缩输出模式。去除填充词、冠词、客套话，保持完整技术准确性，token 用量降低约 75%。 | "caveman mode", "talk like caveman", "less tokens", "be brief", `/caveman` | — |
-| 3 | `caveman-thinking` | 通信压缩 | 同时压缩内部思考/推理和最终输出，使用电报式精简语言。一次加载覆盖两个阶段，可与 `caveman` 安全叠加。 | "caveman thinking", "cave mode", "thought compression", `/caveman-thinking` | "精简思考", "节省token", "压缩思考" |
-| 4 | `diagnose` | 调试诊断 | 研究代码 bug 的规范诊断循环：维度/索引错误、数值不稳定、收敛失败、算法实现错误、意图-代码差距。复现 → 假设 → 插桩 → 修复 → 回归测试。 | "diagnose this", "debug this", "algorithm not converging", "NaN/Inf values", "results don't match paper", `/diagnose` | — |
-| 5 | `grill-me` | 方案评审 | 对方案/设计进行无死角追问，直至达成共识。遍历决策树的每个分支，逐一解决依赖关系。所有问题批量提交。 | "grill me", "stress-test my plan" | — |
-| 6 | `handoff` | 会话管理 | 将当前对话压缩为最小交接块，供新 agent 继续。剥离临时工具输出，保留核心代码和决策，压缩历史。 | "hand off", "continue in new session", `/handoff` | — |
-| 7 | `improve-codebase-architecture` | 架构优化 | 在代码库中发现深化机会——将浅模块转化为深模块。暴露架构摩擦，提出可测试性和 AI 可导航性的重构建议。依据项目领域文档（CONTEXT.md、AGENTS.md、ADR）。 | "improve architecture", "find refactoring opportunities", "consolidate modules", `/improve-codebase-architecture` | — |
-| 8 | `init-with-grilling` | 研究初始化 | 通过引出精确问题、假设、证据计划、方法、数据来源和可复现约束来初始化研究项目。生成研究章程（AGENTS.md），区分已观察/已计划/已假设的事实。 | "init research project", "new experiment", "paper reproduction", `/init-with-grilling` | — |
-| 9 | `tdd` | 测试驱动 | 研究代码的 TDD 红-绿-重构循环。测试验证科学正确性（解析解、不变量、收敛性），而非实现细节。垂直示踪子弹，而非水平批量测试。 | "TDD", "red-green-refactor", "test-first", "verify numerical correctness", `/tdd` | "复现", "数值回归", "收敛验证", "消融实验", "可复现性", "写测试" |
-| 10 | `write-a-skill` | 元技能 | 按规范结构（SKILL.md + REFERENCE.md + scripts/）创建新 Agent 技能。渐进式披露、打包资源、评审工作流。 | "write a skill", "create a skill", "build a new skill", `/write-a-skill` | — |
-| 11 | `zoom-out` | 代码理解 | 拉远视角，提供更广上下文或更高层视角。用于对某段代码不熟悉，或需要了解其在更大图景中的位置时。 | "zoom out", `/zoom-out` | "有什么用", "干什么的", "怎么实现", "讲解一下", "怎么回事", "是什么", "解释一下", "整体看一下" |
+**不收**本机环境备忘类技能。公开目录以本仓库里的 15 个技能为准。
 
 ---
 
-## 按场景速查
+## 怎么用才最好用
 
-| 你想做什么？ | 加载 |
-|---|---|
-| 整理/归档凌乱的研究仓库 | `archive` |
-| 节省 token，压缩所有输出 | `caveman` + `caveman-thinking` |
-| 调试 NaN/Inf 或不收敛的算法 | `diagnose` |
-| 开发前对设计进行压力测试 | `grill-me` |
-| 在新会话中继续之前的工作 | `handoff` |
-| 重构以优化架构 | `improve-codebase-architecture` |
-| 用严谨方法启动新的研究项目 | `init-with-grilling` |
-| 为研究代码编写测试 | `tdd` |
-| 创建新的可复用技能 | `write-a-skill` |
-| 快速理解不熟悉的代码 | `zoom-out` |
+1. **用任务点名，不要一次加载一堆。** 说「拆这篇论文」「审稿」「立项」「这段 `trainer.py` 干什么的」，让 agent 选一个主技能。只有文档写明可叠加的才叠加（`caveman` + `caveman-thinking`）。
+2. **同一条消息里把材料给齐。** PDF / arXiv id、计划草稿、仓库、报错、公式，缺材料时技能会停下来问，而不是猜。
+3. **互斥的技能不要混用。** 拆解不是审稿，审稿不是代写，说人话不是洞穴人，看代码位置不是查 bug。
+4. **先对齐再动手。** `academic-writing` 先出提纲再成稿；`archive` 先确认迁移再搬文件；`improve-codebase-architecture` 只出深化简报，不直接改代码。
 
----
+### 按意图选技能
 
-## 技能目录结构
-
-每个技能遵循以下布局：
-
-```
-skill-name/
-├── SKILL.md           # 主指令文件（必需）
-├── REFERENCE.md       # 详细参考文档
-├── EXAMPLES.md        # 使用示例
-└── scripts/           # 工具脚本（可选）
-```
+| 你想做的事 | 用 | 不要用 |
+|---|---|---|
+| 搞清这篇论文在卖什么、吃什么吐什么 | `paper-dissect` | `critical-paper-review` |
+| 给别人的稿打分 / 写审稿意见 | `critical-paper-review` | `paper-dissect`、`academic-writing` |
+| 用你已有的证据写成稿 | `academic-writing` | `critical-paper-review` |
+| 把含糊想法写成可检验的研究章程 | `init-with-grilling` | `grill-me` |
+| 烤问产品 / 设计 / 实现计划 | `grill-me` | `init-with-grilling` |
+| 迷失在某个函数 / 文件里 | `zoom-out` | `plain-speak`、`diagnose` |
+| 概念听不懂，要通俗解释 | `plain-speak` | `zoom-out`、`caveman` |
+| 代码能跑但数字不对 / NaN / 不收敛 | `diagnose` | `zoom-out` |
+| 模块又浅又散，想加深接口 | `improve-codebase-architecture` | `archive`、`diagnose` |
+| 把乱仓库整理成可开源的论文仓库 | `archive` | `improve-codebase-architecture` |
+| 回复更短 | `caveman` | `plain-speak` |
+| 会话要交给下一个 agent | `handoff` | 继续在旧会话里硬撑 |
 
 ---
 
-## 安装
+## 论文读写
 
-技能从 `~/.config/opencode/skills/` 加载。将新技能目录放在此处即可供 agent 使用。
+### `paper-dissect`
+
+**做什么。** 只回答四件事：这篇论文在卖哪一件事、输入输出是什么、内部模块怎么跑、正文有没有兑现摘要。写出结构对齐的 `dissect.zh.md` 和 `dissect.en.md`。
+
+**不做什么。** 不综述、不打分、不编造原文没有的模块、不审稿、不代写。模块不在原文里就写「原文不足」。
+
+**怎么叫。** 「论文拆解」「拆解这篇论文」「核心卖点」「吃进去吐出来」、paper teardown、`/paper-dissect`。带上 PDF 路径或 arXiv id。
+
+**推荐用法。** 先拆解再决定要不要审、要不要写。读完全文；只读摘要和方法时，拆解置信度会低。审稿请换 `critical-paper-review`，成稿请换 `academic-writing`。
+
+### `critical-paper-review`
+
+**做什么。** 以独立审稿人身份审**别人的** CS / ML / AI / 统计稿：带引文的维度标签、新颖性检索表、由固定映射表算出的会议 1–10 分和期刊建议，以及中英审稿信。
+
+**不做什么。** 不润色原文、不代写 rebuttal、不在同一会话里审自己刚写的稿、不靠语言模型「编」出分数或文献。
+
+**怎么叫。** 「审这篇」「referee」「OpenReview 风格」「给 1–10 分」「accept / reject」、`/critical-paper-review`。
+
+**推荐用法。** 先冻结会议还是期刊、哪个会场。分数必须跑 `scripts/map_score.py`，不要口算。若当前会话已经在写这篇稿，换新会话再审。
+
+### `academic-writing`
+
+**做什么。** 先对齐你的偏好和**你实际有的证据**，再出论证提纲，然后按体裁成稿（方法、综述、摘要、引言、rebuttal；基金文本只是附录）。默认 CS/ML 写法，不编造结果。
+
+**不做什么。** 证据、贡献句、venue/体裁、文风样本这四道门没齐之前不成稿。不编数字、引用、合作者或推荐信。
+
+**怎么叫。** 「论文」「成稿」「提纲」、Nature-style、contribution、introduction、abstract、rebuttal。
+
+**推荐用法。** 把图表、数字、阴性结果和目标 venue 一并给出。同一轮先看提纲，确认后再成稿。它是作者，不是改写器。
+
+---
+
+## 研究立项与代码
+
+### `init-with-grilling`
+
+**做什么。** 把含糊的研究想法问成可审计的研究章程（默认写项目根目录 `AGENTS.md`）：可证伪问题、假设、操作化、证据出处、对照、可复现约束。
+
+**不做什么。** 不为上线产品做架构。不编造数据集、基线、结果或因果解释。假设不是发现。
+
+**怎么叫。** 新实验、论文复现、分析项目、`/init-with-grilling`。
+
+**推荐用法。** 在已有仓库里跑，让它先勘查再提问。研究问题用这个；实现 / 产品计划用 `grill-me`。问完以最小能回答问题的实验为准。
+
+### `archive`
+
+**做什么。** 把乱的研究项目收成可发布的论文仓库：勘查 → 写意图 → 清理 → 重构 → 核对。
+
+**不做什么。** 不问就删实验产物、结果、checkpoint。你没要求就不 commit。文件名看起来像垃圾也不擅自当垃圾。
+
+**怎么叫。** 「整理项目」「整理成论文仓库」「论文开源」、archive this repo、`/archive`。
+
+**推荐用法。** 重构方案确认后再搬文件。适合准备开源 / 随论文放代码，不适合实验还在改数字时大搬家。
+
+### `tdd`
+
+**做什么。** 研究代码的红-绿-重构：测试锁定的是算法的数学合同（解析解、不变量、收敛、可复现），不是张量形状。
+
+**不做什么。** 不要先写完全部测试再写完全部实现（横切）。不要测实现细节，导致无害的向量化也把测试弄红。
+
+**怎么叫。** TDD、red-green-refactor、复现、数值回归、收敛验证、消融实验、写测试。
+
+**推荐用法。** 先问「最简单、答案已知的例子是什么」。一次只测一条性质：一条测试 → 一点实现 → 再下一条。先 GREEN 再重构。
+
+### `diagnose`
+
+**做什么。** 研究代码的静默错误：维度、数值不稳、数据管线、公式翻错、不收敛、不可复现、指标算错、意图与代码不一致。流程是：复现 → 假设 → 打点 → 修 → 回归。
+
+**不做什么。** 不负责给初学者讲概念，不负责架构深化，不负责整仓库导览。
+
+**怎么叫。** 「diagnose this」「debug this」、不收敛、NaN / Inf、和论文 / 教材对不上、维度对不上。
+
+**推荐用法。** 先做最小可手算的例子，再给 3–5 个可证伪假设，不要一上来改。修之前先写回归测试（缝能测到的话）。
+
+### `improve-codebase-architecture`
+
+**做什么。** 找「加深」机会：小接口背后做更多事，让代码可测、对 agent 更好读。选定方案后写出深化简报，交给 `/refactor` 执行。它诊断和决策，**不实现**。
+
+**不做什么。** 不直接开改。不和现有 ADR 对着干却不标明。不把这个技能当成「顺便重构」。
+
+**怎么叫。** 改善架构、找重构点、合并耦太紧的模块、让代码对 AI 更好导航。
+
+**推荐用法。** 仓库里最好已有 `CONTEXT.md` / `AGENTS.md` / `INTENT.md`。先看候选列表，选一个再往下烤。要动手时跑它给出的 `/refactor`，不要让它边设计边改。
+
+---
+
+## 对话与交接
+
+### `grill-me`
+
+**做什么。** 把计划 / 设计的决策树逐枝问完，直到双方理解一致。先勘查再问；每轮把未决问题打成一批选项（带「推荐」）。面向用户的烤问语言只有中文和英文。
+
+**不做什么。** 不替你实现，不成稿，不写研究章程（那是 `init-with-grilling`）。不承诺日语、韩语等其它烤问语言。
+
+**怎么叫。** 「grill me」、`/grill-me`、把计划贴进来并说要压力测试。
+
+**推荐用法。** 同一条消息里给出完整计划。认真看选项，不要闭眼全选推荐。换语言靠连续两条自由文本，不靠「用英文问」这种口令。
+
+### `plain-speak`
+
+**做什么。** 给慢处理、零背景的读者讲：先结论、术语当场解释、一段一事、先例子后规则、类比、结尾复述。触发后一直保持，直到你说 normal / expert mode。
+
+**不做什么。** 不画代码位置图（那是 `zoom-out`）。不压缩句子（那是 `caveman`）。类比不得扭曲事实；危险操作的警告不简化。
+
+**怎么叫。** 「说人话」「讲通俗点」、explain like I'm five、I don't understand、treat me as a beginner。
+
+**推荐用法。** 卡在概念上时用。听不懂就换一个类比，不要重复同一句。不要和 `caveman` 一起开。
+
+### `caveman`
+
+**做什么。** 只压缩**你看见的回复**：去掉客套和水分，技术内容保留。可与 `caveman-thinking` 叠加。
+
+**不做什么。** 单独加载时不压缩内部思考。安全警告、不可逆确认会暂时退出洞穴人语气。
+
+**怎么叫。** caveman mode、talk like caveman、`/caveman`。关：`stop caveman`；两层都关：`normal mode` / `stop less tokens`。
+
+**推荐用法。** 长会话、你已经懂背景、只想少看字时用。教人时用 `plain-speak`。最长短语优先：`use caveman thinking` 不会误开本技能。
+
+### `caveman-thinking`
+
+**做什么。** 只压缩**内部思考**，逻辑步骤还在。你看见的回复不变，除非同时加载了 `caveman`。
+
+**不做什么。** 不改工具调用、代码、写文件。压缩到「fix bug」这种丢掉推理的程度算失败。
+
+**怎么叫。** caveman thinking、cave mode、thought compression、`/caveman-thinking`。关本层：`stop caveman-thinking`。
+
+**推荐用法。** 要省思考侧 token 时开。两层都要短就和 `caveman` 一起开。开关都看最长匹配，避免短词误伤。
+
+### `zoom-out`
+
+**做什么。** 对某个函数 / 模块 / 文件 / 类上抽**一层**：这层干什么、邻模块、直接谁调谁、再上一层在用它做什么。只对这一次回复有效。
+
+**不做什么。** 不扫整仓、不讲小白课、不查 bug、不重构、不拆论文。没有代码对象的「是什么 / 解释一下」不要用它。
+
+**怎么叫。** 「这段 / 这个函数 / 模块 / 文件干什么的」「整体看一下」、zoom out、`/zoom-out`，并点名目标。
+
+**推荐用法。** 指到具体文件或符号。下一问「那这个文件呢」是一次新的 zoom-out，不是模式残留。
+
+### `handoff`
+
+**做什么。** 把当前会话压成下一段 agent 能接着干的交接块：目标、决策、关键路径、结果、失败教训、可复现信息、下一步和该加载的技能。
+
+**不做什么。** 不在本会话里把活干完。不把长工具输出整段复制进交接块。
+
+**怎么叫。** 换会话继续、交给另一个 agent、`/handoff`，最好带上下一段的焦点。
+
+**推荐用法。** 上下文要爆、或要换模型 / 换人之前用。写明下一会话焦点，并点名该加载的技能。
+
+---
+
+## 元技能
+
+### `write-a-skill`
+
+**做什么。** 按渐进披露写新技能：短的 `SKILL.md`，少见细节进 `REFERENCE.md` / `EXAMPLES.md`，确定性步骤可以配脚本。
+
+**不做什么。** 描述里不写清「做什么 / 何时触发」，agent 就选不对。`SKILL.md` 不要写成一本书。
+
+**怎么叫。** 创建 / 编写 / 做一个新 skill。
+
+**推荐用法。** 一个技能只做一件事。触发词写进 description。先和使用者对需求，再落盘，再一起改。
+
+---
+
+## 三条组合工作流
+
+### 1. 读别人的论文，再决定怎么写自己的
+
+`paper-dissect`（搞清卖点和映射）→ 若要评价这篇稿，换新会话用 `critical-paper-review` → 用**你自己的**证据走 `academic-writing`。
+
+拆解看机制，审稿看能否发表，写稿看你有没有结果。不要让同一个技能既打分又代写。
+
+### 2. 开一个能被证伪、也能被复现的实验
+
+`init-with-grilling`（章程）→ `tdd`（按数学合同往前做）→ 数字说谎时用 `diagnose`。要随论文开源仓库时，最后才 `archive`。
+
+先写清问题再写测试；先有最小已知答案，再加复杂性。实验还在改协议时不要整理开源。
+
+### 3. 锁住设计，再交给下一会话
+
+实现或产品计划用 `grill-me`；代码形状用 `improve-codebase-architecture`（出简报，不直接改）。对齐之后 `/handoff`，写明下一会话焦点和建议技能。
+
+研究假设和数据协议不要用 `grill-me` 糊弄过去，那是 `init-with-grilling` 的活。
+
+---
+
+各技能的硬规则、模板和反例在各自目录的 `SKILL.md`、以及其中的 `REFERENCE.md` / `EXAMPLES.md`。这份 README 只告诉你点谁、何时点、怎样点才不浪费一轮对话。

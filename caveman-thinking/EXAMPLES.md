@@ -1,6 +1,8 @@
 # Caveman Thinking — Before/After Examples
 
-Each example shows the same reasoning task done conventionally (verbose) vs compressed (caveman-thinking).
+Thinking/reasoning phase only. User-visible output is out of scope (that is `caveman`).
+
+Each example shows the same reasoning task done conventionally (verbose) vs compressed.
 
 ---
 
