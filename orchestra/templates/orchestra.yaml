@@ -1,0 +1,64 @@
+# Orchestra construction state.
+# Stores the current construction graph and execution state.
+# Do not store reasoning transcripts or temporary investigation results.
+# Node transitions and invalidation: references/review-and-repair.md, Ledger.
+
+goal: ""
+
+architecture:
+
+  nodes: {}
+
+  # Example:
+  #
+  # nodes:
+  #
+  #   dataset_loader:
+  #
+  #     status: ready
+  #     # ready | implementing | review | accepted | blocked
+  #     # ready permits coding against stable contracts, not integration.
+  #     blocker: null # Reason and required resolution when blocked; otherwise null.
+  #     session_id: null # Resumable implementation session, when supported.
+  #     delegated_to: null # Assigned agent identity or role.
+  #     responsibility:
+  #       "Provide validated dataset objects with reproducible splits."
+  #
+  #     contract:
+  #
+  #       interface:
+  #         "load_dataset(config) -> Dataset"
+  #
+  #       acceptance:
+  #         - "Returns train and test partitions."
+  #
+  #       scientific_invariants:
+  #         - "No test information enters preprocessing."
+  #
+  #     dependencies: []
+  #
+  #     files:
+  #       - "src/data/dataset.py"
+
+
+integration:
+
+  status: pending
+  # pending | active | complete
+
+  entry_point: null # Project-root-relative path, e.g. scripts/run_experiment.py.
+
+
+validation:
+
+  status: pending
+  # pending | running | failed | passed | blocked
+  # passed requires final end-to-end validation, not just partial-path checks.
+
+  log:
+    - "[pending] validation queued; no checks executed yet."
+    # - "[running] checking class distribution across splits."
+    # - "[passed] split integrity: train/test index sets are disjoint."
+    # - "[failed] leakage check: scaler was fitted before splitting."
+    # - "[blocked] dataset unavailable; restore the configured dataset path."
+    # - "[pending] preprocessing changed; prior leakage-check evidence superseded."
