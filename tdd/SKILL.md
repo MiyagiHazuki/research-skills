@@ -1,6 +1,7 @@
 ---
 name: tdd
-description: Test-driven development with red-green-refactor loop for research code. Use when user wants to reproduce a paper, verify numerical correctness, implement algorithms from formulas, catch regressions in experiments, run ablation studies, test convergence, or set up reproducible experiment pipelines. Triggers: "TDD", "red-green-refactor", "test-first", "复现", "数值回归", "收敛验证", "消融实验", "可复现性", "写测试".
+description: >-
+  Test-driven development with red-green-refactor loop for research code. Use when user wants to reproduce a paper, verify numerical correctness, implement algorithms from formulas, catch regressions in experiments, run ablation studies, test convergence, or set up reproducible experiment pipelines. Triggers: "TDD", "red-green-refactor", "test-first", "复现", "数值回归", "收敛验证", "消融实验", "可复现性", "写测试".
 ---
 
 # Test-Driven Development for Research

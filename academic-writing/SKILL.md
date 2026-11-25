@@ -1,6 +1,7 @@
 ---
 name: academic-writing
-description: Thinks and writes as a professional academic author. Aligns the user's preferences and supplied evidence into an argument outline, then drafts venue-appropriate prose using Nature-essay craft: clear, concrete, persuasive, no overclaim. Covers methods papers, reviews, abstracts, introductions, and rebuttals; grant text is a short appendix. Never invents results. Use when the user wants to write or finish a paper or section from experiments or a literature survey, or mentions 论文, 成稿, 提纲, Nature-style writing, contribution, introduction, abstract, or rebuttal.
+description: >-
+  Thinks and writes as a professional academic author. Aligns the user's preferences and supplied evidence into an argument outline, then drafts venue-appropriate prose using Nature-essay craft: clear, concrete, persuasive, no overclaim. Covers methods papers, reviews, abstracts, introductions, and rebuttals; grant text is a short appendix. Never invents results. Use when the user wants to write or finish a paper or section from experiments or a literature survey, or mentions 论文, 成稿, 提纲, Nature-style writing, contribution, introduction, abstract, or rebuttal.
 ---
 
 # Academic Writing
